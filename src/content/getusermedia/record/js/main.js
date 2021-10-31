@@ -217,7 +217,6 @@ async function init(constraints) {
 }
 
 document.querySelector('button#start').addEventListener('click', async () => {
-  const hasEchoCancellation = document.querySelector('#echoCancellation').checked;
   const audioSource = audioInputSelect.value;
   const videoSource = videoSelect.value;
   const constraints = {
