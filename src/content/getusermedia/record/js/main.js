@@ -115,7 +115,7 @@ function handleSuccess(stream) {
   console.log('getUserMedia() got stream:', stream);
   window.stream = stream;
 
-  const gumVideo = document.querySelector('video#gum');
+  const gumVideo = document.querySelector('video#video');
   gumVideo.srcObject = stream;
 
   getSupportedMimeTypes().forEach(mimeType => {
