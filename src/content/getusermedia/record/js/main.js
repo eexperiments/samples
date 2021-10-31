@@ -13,11 +13,8 @@
 
 const videoElement = document.querySelector('video');
 const audioInputSelect = document.querySelector('select#audioSource');
-const audioOutputSelect = document.querySelector('select#audioOutput');
 const videoSelect = document.querySelector('select#videoSource');
-const selectors = [audioInputSelect, audioOutputSelect, videoSelect];
-
-audioOutputSelect.disabled = !('sinkId' in HTMLMediaElement.prototype);
+const selectors = [audioInputSelect, videoSelect];
 
 function gotDevices(deviceInfos) {
   // Handles being called several times to update labels. Preserve values.
@@ -34,9 +31,6 @@ function gotDevices(deviceInfos) {
     if (deviceInfo.kind === 'audioinput') {
       option.text = deviceInfo.label || `microphone ${audioInputSelect.length + 1}`;
       audioInputSelect.appendChild(option);
-    } else if (deviceInfo.kind === 'audiooutput') {
-      option.text = deviceInfo.label || `speaker ${audioOutputSelect.length + 1}`;
-      audioOutputSelect.appendChild(option);
     } else if (deviceInfo.kind === 'videoinput') {
       option.text = deviceInfo.label || `camera ${videoSelect.length + 1}`;
       videoSelect.appendChild(option);
@@ -74,11 +68,6 @@ function attachSinkId(element, sinkId) {
   }
 }
 
-function changeAudioDestination() {
-  const audioDestination = audioOutputSelect.value;
-  attachSinkId(videoElement, audioDestination);
-}
-
 function gotStream(stream) {
   window.stream = stream; // make stream available to console
   videoElement.srcObject = stream;
@@ -91,23 +80,21 @@ function handleError(error) {
 }
 
 
-  if (window.stream) {
-    window.stream.getTracks().forEach(track => {
-      track.stop();
-    });
-  }
-  const audioSource = audioInputSelect.value;
-  const videoSource = videoSelect.value;
-  const constraints = {
-    audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
-    video: {deviceId: videoSource ? {exact: videoSource} : undefined}
-  };
-  navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
+if (window.stream) {
+  window.stream.getTracks().forEach(track => {
+    track.stop();
+  });
+}
+const audioSource = audioInputSelect.value;
+const videoSource = videoSelect.value;
+const constraints = {
+  audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
+  video: {deviceId: videoSource ? {exact: videoSource} : undefined}
+};
+navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
 
 
 audioInputSelect.onchange = start;
-audioOutputSelect.onchange = changeAudioDestination;
-
 videoSelect.onchange = start;
 
 
@@ -125,9 +112,6 @@ recordButton.addEventListener('click', () => {
   } else {
     stopRecording();
     recordButton.textContent = 'Start Recording';
-    playButton.disabled = false;
-    downloadButton.disabled = false;
-    codecPreferences.disabled = false;
   }
 });
 
@@ -192,9 +176,6 @@ function startRecording() {
 
   console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
   recordButton.textContent = 'Stop Recording';
-  playButton.disabled = true;
-  downloadButton.disabled = true;
-  codecPreferences.disabled = true;
   mediaRecorder.onstop = (event) => {
     console.log('Recorder stopped: ', event);
     console.log('Recorded Blobs: ', recordedBlobs);
@@ -237,10 +218,12 @@ async function init(constraints) {
 
 document.querySelector('button#start').addEventListener('click', async () => {
   const hasEchoCancellation = document.querySelector('#echoCancellation').checked;
+  const audioSource = audioInputSelect.value;
+  const videoSource = videoSelect.value;
   const constraints = {
-    audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
-    video: {deviceId: videoSource ? {exact: videoSource} : undefined}
-  };
+  audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
+  video: {deviceId: videoSource ? {exact: videoSource} : undefined}
+    };
   console.log('Using media constraints:', constraints);
   await init(constraints);
 });
