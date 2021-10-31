@@ -35,7 +35,6 @@ function gotDevices(deviceInfos) {
       option.text = deviceInfo.label || `camera ${videoSelect.length + 1}`;
       videoSelect.appendChild(option);
     } else {
-      console.log('Some other kind of source/device: ', deviceInfo);
     }
   }
   selectors.forEach((select, selectorIndex) => {
@@ -52,19 +51,16 @@ function attachSinkId(element, sinkId) {
   if (typeof element.sinkId !== 'undefined') {
     element.setSinkId(sinkId)
         .then(() => {
-          console.log(`Success, audio output device attached: ${sinkId}`);
         })
         .catch(error => {
           let errorMessage = error;
           if (error.name === 'SecurityError') {
             errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
           }
-          console.error(errorMessage);
           // Jump back to first output device in the list as it's the default.
           audioOutputSelect.selectedIndex = 0;
         });
   } else {
-    console.warn('Browser does not support output device selection.');
   }
 }
 
@@ -143,7 +139,6 @@ downloadButton.addEventListener('click', () => {
 });
 
 function handleDataAvailable(event) {
-  console.log('handleDataAvailable', event);
   if (event.data && event.data.size > 0) {
     recordedBlobs.push(event.data);
   }
@@ -169,20 +164,15 @@ function startRecording() {
   try {
     mediaRecorder = new MediaRecorder(window.stream, options);
   } catch (e) {
-    console.error('Exception while creating MediaRecorder:', e);
     errorMsgElement.innerHTML = `Exception while creating MediaRecorder: ${JSON.stringify(e)}`;
     return;
   }
 
-  console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
   recordButton.textContent = 'Stop Recording';
   mediaRecorder.onstop = (event) => {
-    console.log('Recorder stopped: ', event);
-    console.log('Recorded Blobs: ', recordedBlobs);
   };
   mediaRecorder.ondataavailable = handleDataAvailable;
   mediaRecorder.start();
-  console.log('MediaRecorder started', mediaRecorder);
 }
 
 function stopRecording() {
@@ -191,7 +181,6 @@ function stopRecording() {
 
 function handleSuccess(stream) {
   recordButton.disabled = false;
-  console.log('getUserMedia() got stream:', stream);
   window.stream = stream;
 
   const gumVideo = document.querySelector('video#video');
@@ -211,7 +200,6 @@ async function init(constraints) {
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
     handleSuccess(stream);
   } catch (e) {
-    console.error('navigator.getUserMedia error:', e);
     errorMsgElement.innerHTML = `navigator.getUserMedia error:${e.toString()}`;
   }
 }
@@ -223,6 +211,5 @@ document.querySelector('button#start').addEventListener('click', async () => {
   audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
   video: {deviceId: videoSource ? {exact: videoSource} : undefined}
     };
-  console.log('Using media constraints:', constraints);
   await init(constraints);
 });
