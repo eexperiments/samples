@@ -236,7 +236,6 @@ async function init(constraints) {
 }
 
 document.querySelector('button#start').addEventListener('click', async () => {
-  document.querySelector('button#start').disabled = true;
   const hasEchoCancellation = document.querySelector('#echoCancellation').checked;
   const constraints = {
     audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
